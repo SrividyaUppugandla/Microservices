@@ -16,6 +16,15 @@ var Otp = function () {
 
 };
 
+var envJson;
+var config;
+
+if(config.config) {
+    envJson = config.config;
+    envJson = envJson.replace(/=>/g, ':');
+    config = JSON.parse(envJson);
+}
+
 
 // This api is use to generate an OTP based on the length,type and expiry
 // time
@@ -36,7 +45,7 @@ Otp.prototype.generateOtp = function (app) {
             var generateOtp = function(tokenDetails,callback){
                 console.log("tokenDetails   "+JSON.stringify(tokenDetails))
                 if(tokenDetails.currentHook && tokenDetails.hooks && tokenDetails.totalNoOfhooks ) {
-                    var otpConfig = process.env.channels.OTP;
+                    var otpConfig = config.channels.OTP;
                     //var otpConfig = {
                     //    "length": "5",
                     //    "type": "alphanumeric",
@@ -64,7 +73,7 @@ Otp.prototype.generateOtp = function (app) {
             var sendOtp = function(tokenDetails,callback){
 
                 if(tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider === 'twilio') {
-                    var twilioConfig = process.env.channelproviders.twilio;
+                    var twilioConfig = config.channelproviders.twilio;
                     //var twilioConfig = {
                     //    "accountid": "AC728b20a72ea48a175a0cf47d11a6aa56",
                     //    "accounttoken": "1c84da28903505f762c727fe1bd65700"
@@ -109,7 +118,7 @@ Otp.prototype.generateOtp = function (app) {
                     var sendmail = require("./sendgridservice.js");
                     var sendmailObj = new sendmail();
 
-                    var sendGridConfig = process.env.channelproviders.sendgrid;
+                    var sendGridConfig = config.channelproviders.sendgrid;
                     //var sendGridConfig = {
                     //    "accountid": "r8skU2912a",
                     //    "accounttoken": "BPRV4rL9N7jM9272"
