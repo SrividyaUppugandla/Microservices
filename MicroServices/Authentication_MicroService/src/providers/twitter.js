@@ -9,8 +9,8 @@ var jwt = require('./../jwt/jwt');
 var envJson;
 var config;
 
-if(config.process.env) {
-    envJson = config.process.env;
+if(process.env.config) {
+    envJson = process.env.config;
     envJson = envJson.replace(/=>/g, ':');
     config = JSON.parse(envJson);
 }

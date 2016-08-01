@@ -1,8 +1,8 @@
 var envJson;
 var config;
 
-if(config.config) {
-    envJson = config.config;
+if(process.env.config) {
+    envJson = process.env.config;
     envJson = envJson.replace(/=>/g, ':');
     config = JSON.parse(envJson);
 }
