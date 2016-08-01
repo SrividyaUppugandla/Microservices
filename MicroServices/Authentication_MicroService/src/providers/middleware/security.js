@@ -1,12 +1,10 @@
 var envJson;
 var config;
-
 if(process.env.config) {
     envJson = process.env.config;
     envJson = envJson.replace(/=>/g, ':');
     config = JSON.parse(envJson);
 }
-
 
 
 //verify if callbackUrl is present in query params

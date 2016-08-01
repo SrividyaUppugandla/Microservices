@@ -3,18 +3,17 @@ var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth2').Strategy;
 var security = require('./middleware/security');
 var scope = [];
-// var config = require('./OAuth.json');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
 
 var envJson;
 var config;
-
 if(process.env.config) {
     envJson = process.env.config;
     envJson = envJson.replace(/=>/g, ':');
     config = JSON.parse(envJson);
 }
+
 
 
 // Configure the Google strategy for use by Passport.

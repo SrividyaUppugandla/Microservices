@@ -18,7 +18,6 @@ var Otp = function () {
 
 var envJson;
 var config;
-
 if(process.env.config) {
     envJson = process.env.config;
     envJson = envJson.replace(/=>/g, ':');
@@ -37,15 +36,15 @@ Otp.prototype.generateOtp = function (app) {
             var jwtToken = req.headers.token;
 
             // validating the Jwt and get the decodedInfo
-            var validateJwt = function(callback){
-                Jwt.validateJWT(jwtToken,callback);
+            var validateJwt = function(finalCallback){
+                Jwt.validateJWT(jwtToken,finalCallback);
             };
 
             //This will generate Otp according to user defined configurations
-            var generateOtp = function(tokenDetails,callback){
+            var generateOtp = function(tokenDetails,finalCallback){
                 console.log("tokenDetails   "+JSON.stringify(tokenDetails))
                 if(tokenDetails.currentHook && tokenDetails.hooks && tokenDetails.totalNoOfhooks ) {
-                    var otpConfig = config.channels.OTP;
+                    var otpConfig = config.channels.otp;
                     //var otpConfig = {
                     //    "length": "5",
                     //    "type": "alphanumeric",
@@ -61,19 +60,19 @@ Otp.prototype.generateOtp = function (app) {
                     var otpExpiryTime = otpGenTime + (expiryTime * 60000);
                     tokenDetails.otpExpiryTime = otpExpiryTime;
                     tokenDetails.otpCode = otpCode;
-                    return callback(null, tokenDetails);
+                    return finalCallback(null, tokenDetails);
                 }
                 else{
 
-                    return callback({"error":"Not Authorised"});
+                    return finalCallback({"error":"Not Authorised"});
                 }
 
             };
 
-            var sendOtp = function(tokenDetails,callback){
+            var sendOtp = function(tokenDetails,finalCallback){
 
                 if(tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider === 'twilio') {
-                    var twilioConfig = config.channelproviders.twilio;
+                    var twilioConfig = config.configuration.twilio;
                     //var twilioConfig = {
                     //    "accountid": "AC728b20a72ea48a175a0cf47d11a6aa56",
                     //    "accounttoken": "1c84da28903505f762c727fe1bd65700"
@@ -97,10 +96,10 @@ Otp.prototype.generateOtp = function (app) {
                             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                             if (err) {
 
-                                return callback(err);
+                                return finalCallback(err);
                             }
                             else {
-                                return callback(null,tokenDetails);
+                                return finalCallback(null,tokenDetails);
 
                             }
 
@@ -108,7 +107,7 @@ Otp.prototype.generateOtp = function (app) {
                     }
                     else {
 
-                        return callback({"error":"From Number / To Number is missing"});
+                        return finalCallback({"error":"From Number / To Number is missing"});
                     }
 
 
@@ -118,7 +117,7 @@ Otp.prototype.generateOtp = function (app) {
                     var sendmail = require("./sendgridservice.js");
                     var sendmailObj = new sendmail();
 
-                    var sendGridConfig = config.channelproviders.sendgrid;
+                    var sendGridConfig = config.configuration.sendgrid;
                     //var sendGridConfig = {
                     //    "accountid": "r8skU2912a",
                     //    "accounttoken": "BPRV4rL9N7jM9272"
@@ -139,31 +138,31 @@ Otp.prototype.generateOtp = function (app) {
                             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                             if (err) {
 
-                                return callback(err);
+                                return finalCallback(err);
                             }
                             else {
-                                return callback(null,tokenDetails);
+                                return finalCallback(null,tokenDetails);
 
                             }
                         });
                     }
                     else{
-                        return callback({"error":"fromMail / To Mail is missing"});
+                        return finalCallback({"error":"fromMail / To Mail is missing"});
                     }
                 }
                 else{
-                    return callback({"error":tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider +" not supported now"});
+                    return finalCallback({"error":tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider +" not supported now"});
                 }
             };
 
             // creates a JWT token
-            var createJwt = function(tokenDetails,callback){
+            var createJwt = function(tokenDetails,finalCallback){
 
                 delete tokenDetails.iat;
                 tokenDetails.iat = Math.floor(Date.now() / 1000) - 30 //TODO :: Check this if this is reqd for expiry -- backdate a jwt 30 seconds
                 delete tokenDetails.nextCall;
                 tokenDetails.nextCall = '/validateOtp'
-                Jwt.generateJWT(tokenDetails,callback);
+                Jwt.generateJWT(tokenDetails,finalCallback);
             };
 
             var finalCallback = function(err,result){

@@ -27,54 +27,44 @@ app.configure(function() {
 });
 
 //Initiate provider configuration and routes.
-var facebook = require('./providers/facebook');
-var google = require('./providers/google');
-var linkedin = require('./providers/linkedin');
-var twitter = require('./providers/twitter');
-var authComplete = require('./providers/auth-complete');
-new authComplete(app);
-
-
-console.log("Process.env.configuration---->"+process.env.configuration);
-console.log("Process.env.prehooks---->"+process.env.prehooks);
-console.log("Process.env.posthooks---->"+process.env.posthooks);
-console.log("Process.env.channels---->"+process.env.channels);
-console.log("Process.env.apiKey---->"+process.env.apiKey);
-console.log("Process.env.secretKey---->"+process.env.secretKey);
-
 var envJson;
 var config;
-
 if(process.env.config) {
     envJson = process.env.config;
     envJson = envJson.replace(/=>/g, ':');
-    console.log("configuration after relace ======>"+envJson);
     config = JSON.parse(envJson);
 }
 
 
 //verify if all required credentials available in VCAP for Facebook and then Initiate facebook
 if (config.configuration && config.configuration.facebook && config.configuration.facebook.clientID && config.configuration.facebook.clientSecret && config.configuration.facebook.scope) {
+    var facebook = require('./providers/facebook');
     new facebook(app);
 }
 
 
 //verify if all required credentials available in VCAP for Google and then Initiate google
 if (config.configuration && config.configuration.google && config.configuration.google.clientID && config.configuration.google.clientSecret && config.configuration.google.scope) {
+    var google = require('./providers/google');
     new google(app);
 }
 
 
 //verify if all required credentials available in VCAP for Linkedin and then Initiate linkedin
 if (config.configuration && config.configuration.linkedin && config.configuration.linkedin.clientID && config.configuration.linkedin.clientSecret && config.configuration.linkedin.scope) {
+    var linkedin = require('./providers/linkedin');
     new linkedin(app);
 }
 
 
 //verify if all required credentials available in VCAP for Twitter and then Initiate twitter
 if (config.configuration && config.configuration.twitter && config.configuration.twitter.clientID && config.configuration.twitter.clientSecret) {
+    var twitter = require('./providers/twitter');
     new twitter(app);
 }
+
+var authComplete = require('./providers/auth-complete');
+new authComplete(app);
 
 //Hooks initiation
 var otp = require('./hooks/otp.js');

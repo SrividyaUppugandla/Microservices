@@ -1,5 +1,12 @@
 // dependencies
-var config = require('./OAuth.json');
+var envJson;
+var config;
+if(process.env.config) {
+    envJson = process.env.config;
+    envJson = envJson.replace(/=>/g, ':');
+    config = JSON.parse(envJson);
+}
+
 var jwtVerifyAuthComplete = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
 
