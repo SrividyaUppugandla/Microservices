@@ -1,0 +1,25 @@
+{
+  "name": "OAuth-Authentication-Service",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "express": "~3.3.4",
+    "jade": "^0.34.1",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.0.0",
+    "passport-google-oauth2": "^0.1.6",
+    "passport-linkedin-oauth2": "1.4.1",
+    "passport-twitter": "^1.0.3",
+    "qs": "6.2.0",
+    "randomstring": "1.1.5",
+    "twilio": "^2.9.1",
+    "body-parser":"1.0.2",
+    "sendgrid":"2.0.0",
+    "gelf-pro": "*",
+    "mongoose": "*",
+    "jsonwebtoken":"*",
+    "async": "2.0.1"
+  }
+}
