@@ -7,7 +7,6 @@ var encryptionType = "HS256";
 
 exports.generateJWT= function(payload,callback) {
 
-    // var jwtSecret = process.env.apiKey;
 
 
     //var encryptionType = process.env.algorithmName;
@@ -34,7 +33,6 @@ exports.generateJWT= function(payload,callback) {
 
 exports.validateJWT= function(token,callback) {
 
-    // var jwtSecret = process.env.apiKey;
 
     jwt.verify(token, jwtSecret, function(err, decoded) {
         if (err) {
@@ -57,7 +55,6 @@ exports.validateJWT= function(token,callback) {
 
 exports.verifyJWT= function(req,res,next) {
 
-    // var jwtSecret = process.env.apiKey;
 
     jwt.verify(req.headers.token, jwtSecret, function(err, decoded) {
         if (err) {

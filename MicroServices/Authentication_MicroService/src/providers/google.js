@@ -3,10 +3,18 @@ var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth2').Strategy;
 var security = require('./middleware/security');
 var scope = [];
-var config = require('./OAuth.json');
+// var config = require('./OAuth.json');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
 
+var envJson;
+var config;
+
+if(config.process.env) {
+    envJson = config.process.env;
+    envJson = envJson.replace(/=>/g, ':');
+    config = JSON.parse(envJson);
+}
 
 // Configure the Google strategy for use by Passport.
 //
@@ -15,11 +23,11 @@ var jwt = require('./../jwt/jwt');
 // behalf, along with the user's profile.  The function must invoke `done`
 // with a user object, which will be set at `req.user` in route handlers after
 // authentication.
-if (process.env.configuration && process.env.configuration.google && process.env.configuration.google.clientID && process.env.configuration.google.clientSecret && process.env.configuration.google.scope) {
-    scope = process.env.configuration.google.scope;
+if (config.configuration && config.configuration.google && config.configuration.google.clientID && config.configuration.google.clientSecret && config.configuration.google.scope) {
+    scope = config.configuration.google.scope;
     passport.use(new GoogleStrategy({
-            clientID: process.env.configuration.google.clientID,
-            clientSecret: process.env.configuration.google.clientSecret
+            clientID: config.configuration.google.clientID,
+            clientSecret: config.configuration.google.clientSecret
         },
         function(request, accessToken, refreshToken, profile, done) {
             // The function must invoke `done` with a user object, which will be set at `req.user`
@@ -57,8 +65,8 @@ function google(app){
     app.post('/auth/google', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
             //TODO :: Change parsing of VCAP env variable
             //TODO :: prehook of google will be an array parsing
-            if ( process.env.prehooks && process.env.prehooks.google) {
-                var preHooks = process.env.prehooks.google;
+            if ( config.prehooks && config.prehooks.google) {
+                var preHooks = config.prehooks.google;
                 var totalNoOfPrehooks = preHooks.length;
                 var hookType = "prehook";
                 var authenticationType = "google";

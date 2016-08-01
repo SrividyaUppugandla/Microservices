@@ -3,9 +3,19 @@ var FacebookStrategy = require('passport-facebook').Strategy;
 var passport = require('passport');
 var security = require('./middleware/security');
 var scope = [];
-var config = require('./OAuth.json');
+// var config = require('./OAuth.json');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
+
+
+var envJson;
+var config;
+
+if(config.process.env) {
+    envJson = config.process.env;
+    envJson = envJson.replace(/=>/g, ':');
+    config = JSON.parse(envJson);
+}
 
 
 
@@ -16,11 +26,11 @@ var jwt = require('./../jwt/jwt');
 // behalf, along with the user's profile.  The function must invoke `done`
 // with a user object, which will be set at `req.user` in route handlers after
 // authentication.
-if (process.env.configuration && process.env.configuration.facebook && process.env.configuration.facebook.clientID && process.env.configuration.facebook.clientSecret && process.env.configuration.facebook.scope) {
-    scope = process.env.configuration.facebook.scope;
+if (config.configuration && config.configuration.facebook && config.configuration.facebook.clientID && config.configuration.facebook.clientSecret && config.configuration.facebook.scope) {
+    scope = config.configuration.facebook.scope;
     passport.use(new FacebookStrategy({
-            clientID: process.env.configuration.facebook.clientID,
-            clientSecret: process.env.configuration.facebook.clientSecret
+            clientID: config.configuration.facebook.clientID,
+            clientSecret: config.configuration.facebook.clientSecret
         },
         function(accessToken, refreshToken, profile, done) {
             // The function must invoke `done` with a user object, which will be set at `req.user`
@@ -60,8 +70,8 @@ function facebook(app){
     app.post('/auth/facebook', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
             //TODO :: Change parsing of VCAP env variable
             //TODO :: prehook of facebook will be an array parsing
-            if ( process.env.prehooks && process.env.prehooks.facebook) {
-                var preHooks = process.env.prehooks.facebook;
+            if ( config.prehooks && config.prehooks.facebook) {
+                var preHooks = config.prehooks.facebook;
                 var totalNoOfPrehooks = preHooks.length;
                 var hookType = "prehook";
                 var authenticationType = "facebook";

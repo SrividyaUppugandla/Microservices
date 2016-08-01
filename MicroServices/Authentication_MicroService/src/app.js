@@ -4,7 +4,7 @@ var express = require('express');
 var passport = require('passport');
 var path = require('path');
 //TODO :: Remove this and change all config to process.env
-var config = require('./providers/OAuth.json');
+// var config = require('./providers/OAuth.json');
 var app = express();
 
 // configure Express
@@ -34,26 +34,45 @@ var twitter = require('./providers/twitter');
 var authComplete = require('./providers/auth-complete');
 new authComplete(app);
 
+
+console.log("Process.env.configuration---->"+process.env.configuration);
+console.log("Process.env.prehooks---->"+process.env.prehooks);
+console.log("Process.env.posthooks---->"+process.env.posthooks);
+console.log("Process.env.channels---->"+process.env.channels);
+console.log("Process.env.apiKey---->"+process.env.apiKey);
+console.log("Process.env.secretKey---->"+process.env.secretKey);
+
+var envJson;
+var config;
+
+if(process.env.config) {
+    envJson = process.env.config;
+    envJson = envJson.replace(/=>/g, ':');
+    console.log("configuration after relace ======>"+envJson);
+    config = JSON.parse(envJson);
+}
+
+
 //verify if all required credentials available in VCAP for Facebook and then Initiate facebook
-if (process.env.configuration && process.env.configuration.facebook && process.env.configuration.facebook.clientID && process.env.configuration.facebook.clientSecret && process.env.configuration.facebook.scope) {
+if (config.configuration && config.configuration.facebook && config.configuration.facebook.clientID && config.configuration.facebook.clientSecret && config.configuration.facebook.scope) {
     new facebook(app);
 }
 
 
 //verify if all required credentials available in VCAP for Google and then Initiate google
-if (process.env.configuration && process.env.configuration.google && process.env.configuration.google.clientID && process.env.configuration.google.clientSecret && process.env.configuration.google.scope) {
+if (config.configuration && config.configuration.google && config.configuration.google.clientID && config.configuration.google.clientSecret && config.configuration.google.scope) {
     new google(app);
 }
 
 
 //verify if all required credentials available in VCAP for Linkedin and then Initiate linkedin
-if (process.env.configuration && process.env.configuration.linkedin && process.env.configuration.linkedin.clientID && process.env.configuration.linkedin.clientSecret && process.env.configuration.linkedin.scope) {
+if (config.configuration && config.configuration.linkedin && config.configuration.linkedin.clientID && config.configuration.linkedin.clientSecret && config.configuration.linkedin.scope) {
     new linkedin(app);
 }
 
 
 //verify if all required credentials available in VCAP for Twitter and then Initiate twitter
-if (process.env.configuration && process.env.configuration.twitter && process.env.configuration.twitter.clientID && process.env.configuration.twitter.clientSecret) {
+if (config.configuration && config.configuration.twitter && config.configuration.twitter.clientID && config.configuration.twitter.clientSecret) {
     new twitter(app);
 }
 

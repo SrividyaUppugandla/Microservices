@@ -2,9 +2,19 @@
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
 var security = require('./middleware/security');
-var config = require('./OAuth.json');
+// var config = require('./OAuth.json');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
+
+var envJson;
+var config;
+
+if(config.process.env) {
+    envJson = config.process.env;
+    envJson = envJson.replace(/=>/g, ':');
+    config = JSON.parse(envJson);
+}
+
 
 // Configure the Twitter strategy for use by Passport.
 //
@@ -13,10 +23,10 @@ var jwt = require('./../jwt/jwt');
 // behalf, along with the user's profile.  The function must invoke `done`
 // with a user object, which will be set at `req.user` in route handlers after
 // authentication.
-if (process.env.configuration && process.env.configuration.twitter && process.env.configuration.twitter.clientID && process.env.configuration.twitter.clientSecret) {
+if (config.configuration && config.configuration.twitter && config.configuration.twitter.clientID && config.configuration.twitter.clientSecret) {
     passport.use(new TwitterStrategy({
-            consumerKey: process.env.configuration.twitter.clientID,
-            consumerSecret: process.env.configuration.twitter.clientSecret
+            consumerKey: config.configuration.twitter.clientID,
+            consumerSecret: config.configuration.twitter.clientSecret
         },
         function(accessToken, refreshToken, profile, done) {
             // The function must invoke `done` with a user object, which will be set at `req.user`
@@ -54,8 +64,8 @@ function twitter(app){
 
     app.post('/auth/twitter', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
 
-            if ( process.env.prehooks && process.env.prehooks.twitter) {
-                var preHooks = process.env.prehooks.twitter;
+            if ( config.prehooks && config.prehooks.twitter) {
+                var preHooks = config.prehooks.twitter;
                 var totalNoOfPrehooks = preHooks.length;
                 var hookType = "prehook";
                 var authenticationType = "twitter";

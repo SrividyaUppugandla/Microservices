@@ -2,9 +2,18 @@
 var passport = require('passport');
 var LinkedinStrategy = require('passport-linkedin-oauth2').Strategy;
 var security = require('./middleware/security');
-var config = require('./OAuth.json');
+// var config = require('./OAuth.json');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
+
+var envJson;
+var config;
+
+if(config.process.env) {
+    envJson = config.process.env;
+    envJson = envJson.replace(/=>/g, ':');
+    config = JSON.parse(envJson);
+}
 
 // Configure the LinkedIn strategy for use by Passport.
 //
@@ -13,12 +22,12 @@ var jwt = require('./../jwt/jwt');
 // behalf, along with the user's profile.  The function must invoke `done`
 // with a user object, which will be set at `req.user` in route handlers after
 // authentication.
-if (process.env.configuration && process.env.configuration.linkedin && process.env.configuration.linkedin.clientID && process.env.configuration.linkedin.clientSecret && process.env.configuration.linkedin.scope) {
+if (config.configuration && config.configuration.linkedin && config.configuration.linkedin.clientID && config.configuration.linkedin.clientSecret && config.configuration.linkedin.scope) {
     passport.use(new LinkedinStrategy({
-            clientID: process.env.configuration.linkedin.clientID,
-            clientSecret: process.env.configuration.linkedin.clientSecret,
+            clientID: config.configuration.linkedin.clientID,
+            clientSecret: config.configuration.linkedin.clientSecret,
             //Get the scope details from VCAP
-            scope: process.env.configuration.linkedin.scope,
+            scope: config.configuration.linkedin.scope,
             passReqToCallback: true
         },
         function(req, accessToken, refreshToken, profile, done) {
@@ -54,8 +63,8 @@ function linkedin(app){
 
     app.post('/auth/linkedin', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
 
-            if ( process.env.prehooks && process.env.prehooks.linkedin) {
-                var preHooks = process.env.prehooks.linkedin;
+            if ( config.prehooks && config.prehooks.linkedin) {
+                var preHooks = config.prehooks.linkedin;
                 var totalNoOfPrehooks = preHooks.length;
                 var hookType = "prehook";
                 var authenticationType = "linkedin";
