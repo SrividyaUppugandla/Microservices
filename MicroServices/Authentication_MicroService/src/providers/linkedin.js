@@ -2,6 +2,7 @@
 var passport = require('passport');
 var LinkedinStrategy = require('passport-linkedin-oauth2').Strategy;
 var verify = require('./middleware/verify');
+var authProvider = require('./middleware/auth-provider');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
 
@@ -63,89 +64,13 @@ function linkedin(app){
 
     app.post('/auth/linkedin', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
 
-            if ( config.prehooks && config.prehooks.linkedin) {
-                var preHooks = config.prehooks.linkedin;
-                var totalNoOfPrehooks = preHooks.length;
-                var hookType = "prehook";
-                var authenticationType = "linkedin";
+            var provider = "linkedin";
+            authProvider.authProvider(provider,function(response) {
+                res.header("Access-Control-Allow-Origin", "*");
+                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                res.send(response.responseJson, response.statusCode);
 
-                var nextCall;
-                var channel = preHooks[0].channelprovider;
-
-                if(preHooks[0].channel === 'OTP'){
-                    nextCall = '/generateOtp'
-                }
-                if(preHooks[0].channel === 'Captcha'){
-                    nextCall = '/generateCaptcha'
-                }
-
-                //Prepare JWT json info with totalNoOfPrehooks, preHooks object, currentPreHook(array number), authentication type(linkedin), preparedBy(/auth/linkedin)
-                var jwtInfo = {
-                    totalNoOfhooks      :   totalNoOfPrehooks,
-                    hooks               :   preHooks,
-                    currentHook         :   1,
-                    hookType            :   hookType,
-                    authenticationType  :   authenticationType,
-                    nextCall            :   nextCall,
-                    channelprovider     :   channel,
-                    iat                 :   Math.floor(Date.now() / 1000) - 30, //backdate a jwt 30 seconds to compensate the next execution statements
-                    expiresIn           :   900
-                    //preparedBy          :   authenticationType
-                }
-
-                // sign JWT token
-                jwt.generateJWT(jwtInfo, function(err, token) {
-                    if(err) {
-                        res.header("Access-Control-Allow-Origin", "*");
-                        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                        res.send(err, 500);
-                    }
-                    else {
-                        //Prepare jwt payload info json with all required values like nextcall, channel, jwt-token
-                        var responseJson = {
-                            nextCall            :   nextCall,
-                            channelprovider     :   channel,
-                            token               :   token
-                        }
-                        res.header("Access-Control-Allow-Origin", "*");
-                        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                        res.send(responseJson, 303);
-                    }
-                });
-            }
-            else {
-                var authenticationType = "linkedin";
-                var nextCall = "/linkedin";
-                //send the next method to be called is the redirection to /linkedin API with JWT token PreHooks Cleared message
-                //Prepare JWT json info with totalNoOfPrehooks, preHooks object, currentPreHook(array number), authentication type(linkedin), preparedBy(/auth/linkedin)
-                var jwtInfo = {
-                    authenticationType  :   authenticationType,
-                    isPrehookClear      :   true,
-                    nextCall            :   nextCall,
-                    iat                 :   Math.floor(Date.now() / 1000) - 30, //backdate a jwt 30 seconds to compensate the next execution statements
-                    expiresIn           :   900
-                    //preparedBy          :   authenticationType
-                }
-
-                // sign JWT token
-                jwt.generateJWT(jwtInfo, function(err, token) {
-                    if(err) {
-                        res.header("Access-Control-Allow-Origin", "*");
-                        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                        res.send(err, 500);
-                    }
-                    else {
-                        //Prepare response json
-                        var responseJson = {
-                            nextCall    :   nextCall+"/"+token,
-                            message     :   "pass callbackUrl as query param"
-                        }
-                        res.header("Access-Control-Allow-Origin", "*");
-                        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                        res.send(responseJson, 302);
-                    }
-                });
-            }
+            });
         }
     );
 
