@@ -1,4 +1,9 @@
 // dependencies
+var jwtVerifyAuthComplete = require('./../jwt/verifyHooks');
+var jwt = require('./../jwt/jwt');
+
+//Read the config key value from env variables. This will return a JSON string with '=>' symbol in place of ':'
+//Replace '=>' symbol with ':' to convert to JSON string and parse to retrieve JSON object
 var envJson;
 var config;
 if(process.env.config) {
@@ -7,14 +12,14 @@ if(process.env.config) {
     config = JSON.parse(envJson);
 }
 
-var jwtVerifyAuthComplete = require('./../jwt/verifyHooks');
-var jwt = require('./../jwt/jwt');
-
-
 function authComplete(app){
 
-    //TODO :: Add API key check middleware
-
+    // POST /auth/complete
+    //   This API needs JWT token and apiKey as headers
+    //   This API will be called after authentication to any provider. If any Posthooks are available
+    //   then it will give response details like nextCall and token for next call. Status code is 303
+    //
+    //   Another Scenario is no posthooks available. During that scenario user details will be given in response with statuscode 200
     app.post('/auth/complete',[jwtVerifyAuthComplete.verifyApiKey,jwt.verifyJWT], function(req, res) {
 
             //check if the nextCall is "/auth/complete"  expiry   and   authenticationType
@@ -62,10 +67,14 @@ function authComplete(app){
                             channelprovider     : channel, //TODO :: parse the JSON and get channel type then assign
                             token               : token
                         }
+                        res.header("Access-Control-Allow-Origin", "*");
+                        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                         res.send(responseJson, 303);
                     });
                 }
                 else {
+                    res.header("Access-Control-Allow-Origin", "*");
+                    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                     res.send(payload.userProfile, 200);
                 }
             });

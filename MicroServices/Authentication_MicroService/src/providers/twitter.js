@@ -1,10 +1,12 @@
 // dependencies
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
-var security = require('./middleware/security');
+var verify = require('./middleware/verify');
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
 
+//Read the config key value from env variables. This will return a JSON string with '=>' symbol in place of ':'
+//Replace '=>' symbol with ':' to convert to JSON string and parse to retrieve JSON object
 var envJson;
 var config;
 if(process.env.config) {
@@ -12,8 +14,6 @@ if(process.env.config) {
     envJson = envJson.replace(/=>/g, ':');
     config = JSON.parse(envJson);
 }
-
-
 
 // Configure the Twitter strategy for use by Passport.
 //
@@ -48,8 +48,8 @@ function twitter(app){
     //   redirecting the user to twitter.com.  After authorization, twitter will
     //   redirect the user back to this application at /auth/twitter/callback
     app.get('/twitter/:token', [
-            security.verifyTwitter,    //verify if all required credentials available in VCAP
-            security.verifyTwitterOauthRequest, //verify if callbackUrl is present in query params
+            verify.verifyTwitter,    //verify if all required credentials available in VCAP
+            verify.verifyTwitterOauthRequest, //verify if callbackUrl is present in query params
             jwtVerifyPrehooks.verifyPrehooksClearanceForTwitter, //Verify the clearance for twitter(all prehooks and authentication type)
             passport.authenticate('twitter',{callbackURL: '/auth/twitter/callback'})
         ], function (req, res) {
@@ -57,8 +57,6 @@ function twitter(app){
             // function will not be called.
         }
     );
-
-
 
 
     app.post('/auth/twitter', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
@@ -148,8 +146,6 @@ function twitter(app){
             }
         }
     );
-
-
 
 
     // GET /auth/twitter/callback

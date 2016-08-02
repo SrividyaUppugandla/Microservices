@@ -1,11 +1,13 @@
 // dependencies
 var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth2').Strategy;
-var security = require('./middleware/security');
+var verify = require('./middleware/verify');
 var scope = [];
 var jwtVerifyPrehooks = require('./../jwt/verifyHooks');
 var jwt = require('./../jwt/jwt');
 
+//Read the config key value from env variables. This will return a JSON string with '=>' symbol in place of ':'
+//Replace '=>' symbol with ':' to convert to JSON string and parse to retrieve JSON object
 var envJson;
 var config;
 if(process.env.config) {
@@ -13,8 +15,6 @@ if(process.env.config) {
     envJson = envJson.replace(/=>/g, ':');
     config = JSON.parse(envJson);
 }
-
-
 
 // Configure the Google strategy for use by Passport.
 //
@@ -50,9 +50,8 @@ function google(app){
     //   redirecting the user to google.com.  After authorization, google will
     //   redirect the user back to this application at /auth/google/callback
     app.get('/google/:token', [
-        //TODO :: Add security check for JWT and also check if all prehooks are cleared
-        security.verifyGoogle,    //verify if all required credentials available in VCAP
-        security.verifyOauthRequest, //verify if callbackUrl is present in query params
+        verify.verifyGoogle,    //verify if all required credentials available in VCAP
+        verify.verifyOauthRequest, //verify if callbackUrl is present in query params
         jwtVerifyPrehooks.verifyPrehooksClearanceForGoogle //Verify the clearance for google(all prehooks and authentication type)
     ], function(req,res,next) {
         passport.authenticate(
@@ -61,10 +60,7 @@ function google(app){
     });
 
 
-    //TODO :: add middleware check for apiKey
     app.post('/auth/google', [jwtVerifyPrehooks.verifyApiKey], function (req, res) {
-            //TODO :: Change parsing of VCAP env variable
-            //TODO :: prehook of google will be an array parsing
             if ( config.prehooks && config.prehooks.google) {
                 var preHooks = config.prehooks.google;
                 var totalNoOfPrehooks = preHooks.length;
@@ -85,12 +81,12 @@ function google(app){
                 var jwtInfo = {
                     totalNoOfhooks      :   totalNoOfPrehooks,
                     hooks               :   preHooks,
-                    currentHook         :   1,  //TODO :: check if we can have any ID
+                    currentHook         :   1,
                     hookType            :   hookType,
                     authenticationType  :   authenticationType,
                     nextCall            :   nextCall,
                     channelprovider     :   channel,
-                    iat                 :   Math.floor(Date.now() / 1000) - 30, //TODO :: Check this if this is reqd for expiry -- backdate a jwt 30 seconds
+                    iat                 :   Math.floor(Date.now() / 1000) - 30, //backdate a jwt 30 seconds to compensate the next execution statements
                     expiresIn           :   900
                     //preparedBy          :   authenticationType
                 }
@@ -105,8 +101,8 @@ function google(app){
                     else {
                         //Prepare jwt payload info json with all required values like nextcall, channel, jwt-token
                         var responseJson = {
-                            nextCall            :   nextCall, //TODO :: Parse the json and check for type of method call
-                            channelprovider     :   channel, //TODO :: parse the JSON and get channel type then assign
+                            nextCall            :   nextCall,
+                            channelprovider     :   channel,
                             token               :   token
                         }
                         res.header("Access-Control-Allow-Origin", "*");
@@ -125,7 +121,7 @@ function google(app){
                     authenticationType  :   authenticationType,
                     isPrehookClear      :   true,
                     nextCall            :   nextCall,
-                    iat                 :   Math.floor(Date.now() / 1000) - 30, //TODO :: Check this if this is reqd for expiry -- backdate a jwt 30 seconds
+                    iat                 :   Math.floor(Date.now() / 1000) - 30, //backdate a jwt 30 seconds to compensate the next execution statements
                     expiresIn           :   900
                     //preparedBy          :   authenticationType
                 }
@@ -140,7 +136,7 @@ function google(app){
                     else {
                         //Prepare response json
                         var responseJson = {
-                            nextCall    :   nextCall+"/"+token, //TODO :: Check if token needs to be appended or send separately
+                            nextCall    :   nextCall+"/"+token,
                             message     :   "pass callbackUrl as query param"
                         }
                         res.header("Access-Control-Allow-Origin", "*");
@@ -179,7 +175,7 @@ function google(app){
                 nextCall            : nextCall,
                 isPosthookClear     : false,
                 authenticationType  : authenticationType,
-                iat                 : Math.floor(Date.now() / 1000) - 30, //TODO :: Check this if this is reqd for expiry -- backdate a jwt 30 seconds
+                iat                 : Math.floor(Date.now() / 1000) - 30, //backdate a jwt 30 seconds to compensate the next execution statements
                 expiresIn           : 900
             }
             

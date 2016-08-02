@@ -4,10 +4,7 @@
       "clientID": "478519535677977",
       "clientSecret": "a9bc36abea045066cd4be131e278ff80",
       "protocol": "OAuth",
-      "scope": [
-        "user_friends",
-        "manage_pages"
-      ]
+      "scope": ["user_friends", "manage_pages"]
     },
     "twitter": {
       "clientID": "1NWLdKcCwC73SEoPwhrLrOGDw",
@@ -26,18 +23,15 @@
       "protocol": "OAuth",
       "clientID": "nkr3jzmv05ia",
       "clientSecret": "KObTU70eF9XWBDis",
-      "scope": [
-        "r_basicprofile",
-        "r_emailaddress"
-      ]
+      "scope": ["r_basicprofile","r_emailaddress"]
     },
     "twilio": {
-      "accountid": "AC728b20a72ea48a175a0cf47d11a6aa56",
-      "accounttoken": "1c84da28903505f762c727fe1bd65700"
+      "accountid": "12345",
+      "accounttoken": "45678"
     },
     "sendgrid": {
-      "accountid": "r8skU2912a",
-      "accounttoken": "BPRV4rL9N7jM9272"
+      "accountid": "12345",
+      "accounttoken": "45678"
     }
   },
   "channels": {
@@ -53,7 +47,7 @@
   "prehooks": {
     "facebook": [
       {
-        "channelprovider": "sendgrid",
+        "channelprovider": "twilio",
         "channel": "OTP"
       },
       {
@@ -75,7 +69,7 @@
   "posthooks": {
     "facebook": [
       {
-        "channelprovider": "sendgrid",
+        "channelprovider": "twilio",
         "channel": "OTP"
       },
       {

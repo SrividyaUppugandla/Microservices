@@ -3,8 +3,6 @@ var fs = require('fs');
 var express = require('express');
 var passport = require('passport');
 var path = require('path');
-//TODO :: Remove this and change all config to process.env
-// var config = require('./providers/OAuth.json');
 var app = express();
 
 // configure Express
@@ -26,7 +24,10 @@ app.configure(function() {
 
 });
 
-//Initiate provider configuration and routes.
+
+
+//Read the config key value from env variables. This will return a JSON string with '=>' symbol in place of ':'
+//Replace '=>' symbol with ':' to convert to JSON string and parse to retrieve JSON object
 var envJson;
 var config;
 if(process.env.config) {
@@ -35,6 +36,7 @@ if(process.env.config) {
     config = JSON.parse(envJson);
 }
 
+//Initiate provider configuration and routes.
 
 //verify if all required credentials available in VCAP for Facebook and then Initiate facebook
 if (config.configuration && config.configuration.facebook && config.configuration.facebook.clientID && config.configuration.facebook.clientSecret && config.configuration.facebook.scope) {

@@ -16,6 +16,9 @@ var Otp = function () {
 
 };
 
+
+//Read the config key value from env variables. This will return a JSON string with '=>' symbol in place of ':'
+//Replace '=>' symbol with ':' to convert to JSON string and parse to retrieve JSON object
 var envJson;
 var config;
 if(process.env.config) {
@@ -36,12 +39,12 @@ Otp.prototype.generateOtp = function (app) {
             var jwtToken = req.headers.token;
 
             // validating the Jwt and get the decodedInfo
-            var validateJwt = function(finalCallback){
-                Jwt.validateJWT(jwtToken,finalCallback);
+            var validateJwt = function(callback){
+                Jwt.validateJWT(jwtToken,callback);
             };
 
             //This will generate Otp according to user defined configurations
-            var generateOtp = function(tokenDetails,finalCallback){
+            var generateOtp = function(tokenDetails,callback){
                 console.log("tokenDetails   "+JSON.stringify(tokenDetails))
                 if(tokenDetails.currentHook && tokenDetails.hooks && tokenDetails.totalNoOfhooks ) {
                     var otpConfig = config.channels.otp;
@@ -60,16 +63,16 @@ Otp.prototype.generateOtp = function (app) {
                     var otpExpiryTime = otpGenTime + (expiryTime * 60000);
                     tokenDetails.otpExpiryTime = otpExpiryTime;
                     tokenDetails.otpCode = otpCode;
-                    return finalCallback(null, tokenDetails);
+                    return callback(null, tokenDetails);
                 }
                 else{
 
-                    return finalCallback({"error":"Not Authorised"});
+                    return callback({"error":"Not Authorised"});
                 }
 
             };
 
-            var sendOtp = function(tokenDetails,finalCallback){
+            var sendOtp = function(tokenDetails,callback){
 
                 if(tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider === 'twilio') {
                     var twilioConfig = config.configuration.twilio;
@@ -96,10 +99,10 @@ Otp.prototype.generateOtp = function (app) {
                             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                             if (err) {
 
-                                return finalCallback(err);
+                                return callback(err);
                             }
                             else {
-                                return finalCallback(null,tokenDetails);
+                                return callback(null,tokenDetails);
 
                             }
 
@@ -107,7 +110,7 @@ Otp.prototype.generateOtp = function (app) {
                     }
                     else {
 
-                        return finalCallback({"error":"From Number / To Number is missing"});
+                        return callback({"error":"From Number / To Number is missing"});
                     }
 
 
@@ -138,31 +141,31 @@ Otp.prototype.generateOtp = function (app) {
                             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                             if (err) {
 
-                                return finalCallback(err);
+                                return callback(err);
                             }
                             else {
-                                return finalCallback(null,tokenDetails);
+                                return callback(null,tokenDetails);
 
                             }
                         });
                     }
                     else{
-                        return finalCallback({"error":"fromMail / To Mail is missing"});
+                        return callback({"error":"fromMail / To Mail is missing"});
                     }
                 }
                 else{
-                    return finalCallback({"error":tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider +" not supported now"});
+                    return callback({"error":tokenDetails.hooks[tokenDetails.currentHook - 1].channelprovider +" not supported now"});
                 }
             };
 
             // creates a JWT token
-            var createJwt = function(tokenDetails,finalCallback){
+            var createJwt = function(tokenDetails,callback){
 
                 delete tokenDetails.iat;
                 tokenDetails.iat = Math.floor(Date.now() / 1000) - 30 //TODO :: Check this if this is reqd for expiry -- backdate a jwt 30 seconds
                 delete tokenDetails.nextCall;
                 tokenDetails.nextCall = '/validateOtp'
-                Jwt.generateJWT(tokenDetails,finalCallback);
+                Jwt.generateJWT(tokenDetails,callback);
             };
 
             var finalCallback = function(err,result){
